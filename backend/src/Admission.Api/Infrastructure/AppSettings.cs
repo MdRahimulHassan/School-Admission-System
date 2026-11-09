@@ -21,8 +21,8 @@ public sealed record AppSettings(string ConnectionString, int HoldDurationSecond
     public static AppSettings FromConfiguration(IConfiguration configuration)
     {
         var rawConnection = configuration[ConnectionStringKey];
-        var connectionString = NormalizeConnectionString(
-            string.IsNullOrWhiteSpace(rawConnection) ? DefaultConnectionString : rawConnection.Trim());
+        var connectionString = WithDriverDefaults(NormalizeConnectionString(
+            string.IsNullOrWhiteSpace(rawConnection) ? DefaultConnectionString : rawConnection.Trim()));
 
         return new AppSettings(
             connectionString,
@@ -59,6 +59,31 @@ public sealed record AppSettings(string ConnectionString, int HoldDurationSecond
         if (userInfo.Length > 1)
         {
             builder.Password = Uri.UnescapeDataString(userInfo[1]);
+        }
+
+        return builder.ConnectionString;
+    }
+
+    /// <summary>
+    /// The driver otherwise probes for Kerberos (GSS) encryption on every new connection. The slim
+    /// runtime image has no Kerberos library, so each probe logs an error before falling back.
+    /// Switch the probe off unless the connection string asks for it explicitly.
+    /// </summary>
+    private static string WithDriverDefaults(string connectionString)
+    {
+        NpgsqlConnectionStringBuilder builder;
+        try
+        {
+            builder = new NpgsqlConnectionStringBuilder(connectionString);
+        }
+        catch (ArgumentException ex)
+        {
+            throw new InvalidOperationException($"{ConnectionStringKey} is not a valid connection string: {ex.Message}");
+        }
+
+        if (!connectionString.Contains("Gss", StringComparison.OrdinalIgnoreCase))
+        {
+            builder.GssEncryptionMode = GssEncryptionMode.Disable;
         }
 
         return builder.ConnectionString;

@@ -9,6 +9,12 @@ Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Listen on port 8080 unless told otherwise (--urls, ASPNETCORE_URLS or ASPNETCORE_HTTP_PORTS).
+if (string.IsNullOrEmpty(builder.Configuration["urls"]) && string.IsNullOrEmpty(builder.Configuration["http_ports"]))
+{
+    builder.WebHost.UseUrls("http://*:8080");
+}
+
 // Resolved lazily from IConfiguration so environment variables (and test overrides) are honoured.
 builder.Services.AddSingleton(sp => AppSettings.FromConfiguration(sp.GetRequiredService<IConfiguration>()));
 builder.Services.AddSingleton(sp => NpgsqlDataSource.Create(sp.GetRequiredService<AppSettings>().ConnectionString));
