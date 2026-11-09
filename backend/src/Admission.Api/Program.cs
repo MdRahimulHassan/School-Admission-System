@@ -14,6 +14,7 @@ builder.Services.AddSingleton(sp => AppSettings.FromConfiguration(sp.GetRequired
 builder.Services.AddSingleton(sp => NpgsqlDataSource.Create(sp.GetRequiredService<AppSettings>().ConnectionString));
 builder.Services.AddSingleton<DatabaseMigrator>();
 builder.Services.AddSingleton<AdmissionStore>();
+builder.Services.AddHostedService<HoldExpirySweeper>();
 
 // Leave out fields that have no value instead of sending "field": null.
 builder.Services.ConfigureHttpJsonOptions(options =>
