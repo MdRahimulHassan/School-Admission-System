@@ -31,6 +31,9 @@ public sealed class Hold
     public string StudentId { get; init; } = "";
     public string Status { get; init; } = "";
     public DateTime ExpiresAt { get; init; }
+
+    /// <summary>Seconds until the deadline by the database clock; 0 unless the hold is still HELD.</summary>
+    public double RemainingSeconds { get; init; }
 }
 
 public enum CreateHoldOutcome

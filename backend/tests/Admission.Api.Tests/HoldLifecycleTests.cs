@@ -32,6 +32,8 @@ public class HoldLifecycleTests(DefaultApiFactory factory) : IClassFixture<Defau
         Assert.Matches(new Regex(@"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$"), expiresAtText);
         var expiresAt = DateTime.Parse(expiresAtText, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
         Assert.InRange((expiresAt - before).TotalSeconds, 590, 610);
+        // Extra field: time left by the server's clock, for a countdown that ignores the client's clock.
+        Assert.InRange(json.GetProperty("remainingSeconds").GetDouble(), 590, 600);
 
         Assert.Equal((5, 1, 0, 4), await _client.GetSeatsAsync(classId));
     }
@@ -165,6 +167,7 @@ public class HoldLifecycleTests(DefaultApiFactory factory) : IClassFixture<Defau
         var json = await response.ReadJsonAsync();
         Assert.Equal(holdId, json.GetProperty("holdId").GetString());
         Assert.Equal("CONFIRMED", json.GetProperty("status").GetString());
+        Assert.Equal(0, json.GetProperty("remainingSeconds").GetDouble());
         Assert.Equal("CONFIRMED", await _client.GetHoldStatusAsync(holdId));
         Assert.Equal((5, 0, 1, 4), await _client.GetSeatsAsync(classId));
     }

@@ -8,13 +8,16 @@ namespace Admission.Api.Endpoints;
 /// Shape used by every hold response. It is a superset of what the API contract asks for:
 /// studentId is only filled in for the student who owns the hold (it is omitted from the
 /// public GET /holds/{holdId}, which needs no X-Student-Id header).
+/// remainingSeconds is the time left by the server's clock (0 unless HELD), so a client can show a
+/// correct countdown even when its own clock is wrong.
 /// </summary>
 public sealed record HoldResponse(
-    string HoldId, string ClassId, string ClassName, string? StudentId, string Status, string ExpiresAt)
+    string HoldId, string ClassId, string ClassName, string? StudentId, string Status, string ExpiresAt,
+    double RemainingSeconds)
 {
     public static HoldResponse From(Hold hold, bool includeStudentId) =>
         new(hold.Id, hold.ClassId, hold.ClassName, includeStudentId ? hold.StudentId : null,
-            hold.Status, FormatUtc(hold.ExpiresAt));
+            hold.Status, FormatUtc(hold.ExpiresAt), Math.Round(hold.RemainingSeconds, 1));
 
     /// <summary>ISO 8601 in UTC with whole seconds, exactly like the contract example "2026-11-01T04:10:00Z".</summary>
     private static string FormatUtc(DateTime value) =>

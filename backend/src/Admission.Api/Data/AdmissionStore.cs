@@ -36,8 +36,11 @@ public sealed class AdmissionStore(NpgsqlDataSource dataSource)
                h.class_id,
                c.name AS class_name,
                h.student_id,
-               CASE WHEN h.status = 'HELD' AND h.expires_at <= now() THEN 'EXPIRED' ELSE h.status END AS status,
-               h.expires_at
+               CASE WHEN h.status = 'HELD' AND h.expires_at <= clock_timestamp() THEN 'EXPIRED' ELSE h.status END AS status,
+               h.expires_at,
+               CASE WHEN h.status = 'HELD'
+                    THEN GREATEST(0, EXTRACT(EPOCH FROM (h.expires_at - clock_timestamp())))::float8
+                    ELSE 0 END AS remaining_seconds
         FROM holds h
         JOIN classes c ON c.id = h.class_id
         """;
