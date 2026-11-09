@@ -37,6 +37,7 @@ app.UseCors();
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 app.MapClassEndpoints();
+app.MapHoldEndpoints();
 
 app.MapFallback(() => ApiResults.NotFound("NOT_FOUND", "This URL does not exist."));
 
