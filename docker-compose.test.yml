@@ -1,9 +1,10 @@
-# Runs the backend's automated tests with nothing but Docker:
+# Runs the automated tests with nothing but Docker:
 #
-#   docker compose -f docker-compose.test.yml up --build --abort-on-container-exit --exit-code-from backend-tests
+#   docker compose -f docker-compose.test.yml run --rm --build backend-tests
+#   docker compose -f docker-compose.test.yml run --rm --build frontend-tests
 #   docker compose -f docker-compose.test.yml down -v
 #
-# It uses its own throwaway PostgreSQL, so the application's data is never touched.
+# The backend tests use their own throwaway PostgreSQL, so the application's data is never touched.
 
 name: school-admission-tests
 
@@ -33,3 +34,8 @@ services:
     depends_on:
       test-db:
         condition: service_healthy
+
+  frontend-tests:
+    build:
+      context: ./frontend
+      target: test

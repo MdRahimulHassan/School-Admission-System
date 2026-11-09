@@ -34,6 +34,18 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  frontend:
+    build: ./frontend
+    environment:
+      # The backend URL as the BROWSER reaches it. Read when the container starts, so changing it
+      # needs only a restart, not a rebuild. By default it follows BACKEND_PORT.
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:${BACKEND_PORT:-8080}}
+    ports:
+      - "${FRONTEND_PORT:-5173}:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
   # Bonus check: a second backend process on another port, sharing the same database.
   # Only started with:  docker compose --profile two-backends up --build
   backend-2:
