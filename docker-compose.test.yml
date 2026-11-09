@@ -1,0 +1,35 @@
+# Runs the backend's automated tests with nothing but Docker:
+#
+#   docker compose -f docker-compose.test.yml up --build --abort-on-container-exit --exit-code-from backend-tests
+#   docker compose -f docker-compose.test.yml down -v
+#
+# It uses its own throwaway PostgreSQL, so the application's data is never touched.
+
+name: school-admission-tests
+
+services:
+  test-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: admission_test
+      POSTGRES_USER: admission
+      POSTGRES_PASSWORD: admission
+    # In-memory storage: fast, and gone when the container stops.
+    tmpfs:
+      - /var/lib/postgresql/data
+    command: ["postgres", "-c", "max_connections=200"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admission -d admission_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  backend-tests:
+    build:
+      context: ./backend
+      target: test
+    environment:
+      TEST_DB_CONNECTION_STRING: Host=test-db;Port=5432;Database=admission_test;Username=admission;Password=admission;Maximum Pool Size=20
+    depends_on:
+      test-db:
+        condition: service_healthy
