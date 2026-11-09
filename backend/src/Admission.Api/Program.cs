@@ -1,4 +1,6 @@
+using System.Text.Json.Serialization;
 using Admission.Api.Data;
+using Admission.Api.Endpoints;
 using Admission.Api.Infrastructure;
 using Npgsql;
 
@@ -11,6 +13,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton(sp => AppSettings.FromConfiguration(sp.GetRequiredService<IConfiguration>()));
 builder.Services.AddSingleton(sp => NpgsqlDataSource.Create(sp.GetRequiredService<AppSettings>().ConnectionString));
 builder.Services.AddSingleton<DatabaseMigrator>();
+builder.Services.AddSingleton<AdmissionStore>();
+
+// Leave out fields that have no value instead of sending "field": null.
+builder.Services.ConfigureHttpJsonOptions(options =>
+    options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull);
 
 // The React UI is served from a different origin (another port), so the browser needs CORS.
 // There are no cookies or credentials in this API, which makes allowing any origin safe.
@@ -29,6 +36,7 @@ app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseCors();
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
+app.MapClassEndpoints();
 
 app.MapFallback(() => ApiResults.NotFound("NOT_FOUND", "This URL does not exist."));
 
