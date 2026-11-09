@@ -1,0 +1,2 @@
+# Store text with LF in the repository on every OS (Docker builds run on Linux).
+* text=auto eol=lf

@@ -1,9 +1,16 @@
+using Admission.Api.Data;
 using Admission.Api.Infrastructure;
+using Npgsql;
+
+// Database columns are snake_case (total_seats), C# properties are PascalCase (TotalSeats).
+Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Resolved lazily from IConfiguration so environment variables (and test overrides) are honoured.
 builder.Services.AddSingleton(sp => AppSettings.FromConfiguration(sp.GetRequiredService<IConfiguration>()));
+builder.Services.AddSingleton(sp => NpgsqlDataSource.Create(sp.GetRequiredService<AppSettings>().ConnectionString));
+builder.Services.AddSingleton<DatabaseMigrator>();
 
 // The React UI is served from a different origin (another port), so the browser needs CORS.
 // There are no cookies or credentials in this API, which makes allowing any origin safe.
@@ -14,6 +21,9 @@ var app = builder.Build();
 
 // Fail fast on a bad HOLD_DURATION_SECONDS / connection string instead of on the first request.
 _ = app.Services.GetRequiredService<AppSettings>();
+
+// Create or upgrade the schema before accepting any traffic.
+await app.Services.GetRequiredService<DatabaseMigrator>().MigrateAsync(app.Lifetime.ApplicationStopping);
 
 app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseCors();

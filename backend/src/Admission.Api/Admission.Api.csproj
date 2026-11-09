@@ -11,4 +11,9 @@
     <PackageReference Include="Npgsql" Version="10.0.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- SQL migrations travel inside the assembly, so the Docker image needs no extra files. -->
+    <EmbeddedResource Include="Data\Migrations\*.sql" />
+  </ItemGroup>
+
 </Project>
