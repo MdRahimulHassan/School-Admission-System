@@ -6,9 +6,9 @@
 
 ## Where it was used
 
-The backend was built with heavy AI assistance. I gave the requirements from the brief, decided
-the order of work, answered the open questions and reviewed the result; Claude Code wrote most of
-the code and ran the checks.
+The backend and the frontend were built with heavy AI assistance. I gave the requirements from the
+brief, decided the order of work, asked for the Bangla / English interface, answered the open
+questions and reviewed the result; Claude Code wrote most of the code and ran the checks.
 
 | Area | AI involvement |
 |------|----------------|
@@ -16,7 +16,10 @@ the code and ran the checks.
 | Backend design (per-class row lock, expiry by database clock, derived seat counts) | Proposed by the AI, with the reasoning recorded in `ASSUMPTIONS.md` |
 | Backend code: endpoints, SQL, migrations, error handling, expiry sweeper | Written by the AI |
 | Automated tests, including the concurrency tests | Written by the AI |
-| `Dockerfile`, `docker-compose.yml`, `docker-compose.test.yml` | Written by the AI |
+| Frontend: React screens, API client, auto-refresh, countdown, styling | Written by the AI |
+| Bangla and English interface texts | Written by the AI; Bangla wording to be read through by me |
+| Frontend tests and the in-memory fake backend they use | Written by the AI |
+| `Dockerfile`s, `docker-compose.yml`, `docker-compose.test.yml` | Written by the AI |
 | `README.md`, `ASSUMPTIONS.md`, first draft of this file | Written by the AI |
 
 ## Where the AI got it wrong, and how it was caught
@@ -46,9 +49,30 @@ the code and ran the checks.
    if it had failed to start. Reading the captured output showed the real cause; no project code
    was affected.
 
+5. **An accessibility mistake in the first version of the UI.** The box for the birth
+   registration number and the section around it were both tied to the same label, so assistive
+   technology (and the tests, which find fields the way a screen reader does) saw two things
+   called "Student's birth registration number". The first frontend test run failed on exactly
+   that, and the duplicate label was removed.
+
+6. **A frontend test that tested the wrong thing.** The test for "the last seat is taken by
+   someone else just before I press Apply" first added the other student's hold and then clicked.
+   Because the UI refreshes seat counts on its own, the button had already changed to "No seats"
+   before the click, so the error path was never reached and the test failed. The fake backend
+   was given a hook that takes the seat at the moment the request arrives, which is the real race.
+
+7. **A browser check that fooled itself.** A script simulating a second student in the same
+   browser reported that the second student could "View application" on a full class. Both pages
+   shared the browser's storage, so the "second student" was really the first one. Re-running it
+   with a separate browser profile showed the correct result ("সিট নেই", button disabled).
+
 ## What was checked independently of the AI's own claims
 
-- The whole test suite runs in Docker against a real PostgreSQL (59 tests passing).
+- The backend test suite runs in Docker against a real PostgreSQL (59 tests passing), and the
+  frontend suite runs in Docker too (20 tests passing).
+- The finished UI was driven in a real browser against the real backend and database: create a
+  class, apply, refresh the page, pay, cancel, a second student meeting a full class, both
+  languages, desktop and phone widths. Screenshots of each step were inspected.
 - A separate load test outside the test suite sent 600 simultaneous applications over real HTTP to
   **two running backend containers** sharing one database, for a class with 25 seats: exactly 25
   were granted, 575 received `409`, and both backends reported `heldSeats: 25`.

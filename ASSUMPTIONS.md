@@ -104,6 +104,45 @@ the seat counts on the `POST /classes` response. No contract field is missing or
 
 **CORS allows any origin**, because the UI runs on a different port and the API uses no cookies.
 
+## User interface
+
+**The page opens in Bangla, with English one tap away.** The users are guardians in Bangladesh
+and the brief names the buttons in Bangla ("আবেদন করুন", "ভর্তি ফি দিন", "বাতিল"). The choice is
+remembered in the browser. Numbers are shown in Bangla digits in Bangla mode, and the birth
+registration number may be typed with either Bangla or English digits.
+
+**The birth registration number is remembered in the browser** (`localStorage`). That is what
+makes "refresh the page or reopen the browser and still see the running application" work without
+a login. On a shared computer the "Clear" button next to the box removes it.
+
+**"Refreshes every few seconds" means every 3 seconds**, for both the seat counts and the
+student's applications. Polling was chosen over WebSockets because it needs nothing extra on the
+server and recovers by itself after a network drop.
+
+**The countdown follows the server's clock, not the device's.** Hold responses carry an extra
+`remainingSeconds` field; the UI counts down from that, so a phone with a wrong clock still shows
+the right time. When it reaches zero the application shows `EXPIRED` and the pay button is
+disabled immediately, then the UI re-reads the real state from the server.
+
+**After expiry the pay button stays visible but disabled**, so it is obvious that paying is no
+longer possible; the cancel button disappears because there is nothing left to cancel.
+
+**Cancelling asks for confirmation; paying does not.** Cancelling gives up a seat that may be
+impossible to get back, so one extra tap is worth it. Paying is what the user came to do.
+
+**While the server is unreachable the last known data stays on screen** under a clear "cannot
+reach the server" banner, and the UI keeps retrying. Blanking the page would lose the student's
+context for no benefit.
+
+**An application page opened without its owner's number is read-only.** `GET /holds/{holdId}`
+needs no header, so the state can be shown; pay and cancel need the matching number.
+
+**The frontend port is 5173** (Vite's usual port), since the brief leaves it open.
+
+**The backend URL is a runtime setting of the frontend container.** `VITE_API_BASE_URL` is
+written into `/config.js` when the container starts, so it can be changed with an environment
+variable without rebuilding the image. It must be the URL as seen from the user's browser.
+
 ## Technology
 
 **.NET 10 (LTS)** with ASP.NET Core minimal APIs. The brief allows ".NET 8 or newer".
@@ -112,6 +151,11 @@ the seat counts on the `POST /classes` response. No contract field is missing or
 guarantees (row lock, conditional `UPDATE`, partial unique index). Writing that SQL explicitly keeps
 the critical path short and reviewable. Schema changes are plain `.sql` migration files applied at
 startup.
+
+**React with TypeScript and plain CSS, no UI library.** Four screens do not need a component
+framework; fewer dependencies means a smaller download on slow connections and less to break. The
+Bangla typeface (Hind Siliguri) is bundled with the app, so it looks the same without internet
+access to a font service.
 
 **Tests run against a real PostgreSQL**, not an in-memory fake, because the behaviour being
 tested is the database's locking.
