@@ -2,13 +2,13 @@
 
 ## Tool
 
-**Claude Code** (Anthropic's Claude, running as a coding agent in the terminal).
+An AI coding assistant, running as a coding agent in the terminal.
 
 ## Where it was used
 
 The backend and the frontend were built with heavy AI assistance. I gave the requirements from the
 brief, decided the order of work, asked for the Bangla / English interface, answered the open
-questions and reviewed the result; Claude Code wrote most of the code and ran the checks.
+questions and reviewed the result; the AI assistant wrote most of the code and ran the checks.
 
 | Area | AI involvement |
 |------|----------------|
