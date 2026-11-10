@@ -2,7 +2,7 @@
 
 ## Tool
 
-An AI coding assistant, running as a coding agent in the terminal.
+AI assistants: ChatGPT and Claude.
 
 ## Where it was used
 
