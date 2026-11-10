@@ -1,26 +1,30 @@
 # AI usage
 
-## Tool
+## Tools
 
-AI assistants: ChatGPT and Claude.
+ChatGPT and Claude, used as implementation assistants throughout.
 
-## Where it was used
+## My role
 
-The backend and the frontend were built with heavy AI assistance. I gave the requirements from the
-brief, decided the order of work, asked for the Bangla / English interface, answered the open
-questions and reviewed the result; the AI assistant wrote most of the code and ran the checks.
+I owned the requirements, scope and priorities from the brief, decided the order of work, made the
+product decisions (including the Bangla / English interface), answered the open design questions,
+and reviewed the output before accepting it. Nothing was accepted on trust: it had to pass the
+automated tests and the checks listed at the end of this file, and I tried the running application
+myself in the browser.
 
-| Area | AI involvement |
-|------|----------------|
-| Development environment setup (.NET SDK, GitHub CLI, Docker checks) | Done by the AI |
-| Backend design (per-class row lock, expiry by database clock, derived seat counts) | Proposed by the AI, with the reasoning recorded in `ASSUMPTIONS.md` |
-| Backend code: endpoints, SQL, migrations, error handling, expiry sweeper | Written by the AI |
-| Automated tests, including the concurrency tests | Written by the AI |
-| Frontend: React screens, API client, auto-refresh, countdown, styling | Written by the AI |
-| Bangla and English interface texts | Written by the AI; Bangla wording to be read through by me |
-| Frontend tests and the in-memory fake backend they use | Written by the AI |
-| `Dockerfile`s, `docker-compose.yml`, `docker-compose.test.yml` | Written by the AI |
-| `README.md`, `ASSUMPTIONS.md`, first draft of this file | Written by the AI |
+## Where AI was used
+
+| Area | Who did what |
+|------|--------------|
+| Requirements, scope, order of work, product decisions | Me |
+| Review of the generated code, tests and docs | Me |
+| Backend design (per-class row lock, expiry by database clock, derived seat counts) | AI proposed the options, with the reasoning in `ASSUMPTIONS.md`; I reviewed and approved them |
+| Backend code, migrations, SQL, expiry sweeper | Written by AI, reviewed by me |
+| Backend and frontend tests | Written by AI, reviewed by me |
+| React frontend, API client, styling | Written by AI, reviewed by me |
+| Verification: load test, scripted browser walkthrough, endpoint checks | Run by AI at my direction; I tested the application by hand in the browser, and the load test can be re-run with `node scripts/load-test.mjs` |
+| Docker files, `README.md`, `ASSUMPTIONS.md`, first draft of this file | Written by AI |
+| Bangla interface text | Written by AI; I am reading it through |
 
 ## Where the AI got it wrong, and how it was caught
 

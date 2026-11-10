@@ -167,7 +167,15 @@ docker compose --profile two-backends up --build
 ```
 
 A second backend starts on http://localhost:8081 (change with `BACKEND_2_PORT`), sharing the same
-PostgreSQL. Seats stay consistent across both, because the seat check is guarded by a database row
+PostgreSQL. To see it hold under load (needs Node.js 18+), send 600 simultaneous applications for
+25 seats, split across both backends:
+
+```bash
+BACKENDS=http://localhost:8080,http://localhost:8081 node scripts/load-test.mjs
+```
+
+It prints `PASS` when exactly 25 applications were granted and the other 575 received `409`.
+ Seats stay consistent across both, because the seat check is guarded by a database row
 lock rather than anything in application memory. Details are in [ASSUMPTIONS.md](ASSUMPTIONS.md).
 
 ## Project layout
